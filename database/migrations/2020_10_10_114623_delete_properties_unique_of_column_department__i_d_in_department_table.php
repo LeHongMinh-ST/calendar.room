@@ -14,7 +14,7 @@ class DeletePropertiesUniqueOfColumnDepartmentIDInDepartmentTable extends Migrat
     public function up()
     {
         Schema::table('departments', function (Blueprint $table) {
-            $table->dropUnique('departments_department_id_unique');
+//            $table->dropUnique('departments_department_id_unique');
         });
     }
 
