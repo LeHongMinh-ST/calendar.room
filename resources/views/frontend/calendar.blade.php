@@ -10,7 +10,7 @@
     <link href='{{asset('assets/fullcalendar')}}/packages/bootstrap/main.css' rel='stylesheet'/>
     <style>
         .fc-content{
-            text-align: le;
+            text-align: left;
         }
         .required {
             color: red;
