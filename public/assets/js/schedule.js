@@ -59,7 +59,7 @@ $(document).ready(function () {
                 }
             },
             columns: [
-                {data: 'DT_RowIndex', searchable: false,class:'text-center'},
+                {data: 'checkbox',orderable: false, searchable: false,class:'text-center'},
                 {data: 'room_id', name: 'room_id', orderable: false, searchable: true},
                 {data: 'subject_id', name: 'subject_id', orderable: false, searchable: true},
                 {data: 'subject_name', name: 'subject_name', orderable: false, searchable: true, class:'text-center'},
@@ -83,35 +83,31 @@ $(document).ready(function () {
     $('#table_schedules').on('click', '.btn-delete', function (event) {
         event.preventDefault();
         let id = $(this).attr('data-id');
-        bootbox.confirm({
-            title: "Xóa yêu cầu đăng kí",
-            message: "Bạn có chắc chắn muốn xóa yêu cầu này!",
-            buttons: {
-                cancel: {
-                    label: '<i class="fa fa-times"></i> Trở lại'
-                },
-                confirm: {
-                    label: '<i class="fa fa-check"></i> Xóa'
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    $.ajax({
-                        type: 'delete',
-                        url: '/admin/schedules/delete/' + id,
-                        success: function (response) {
-                            if(!response.error){
-                                $('#table_schedules').DataTable().ajax.reload();
-                                toastr.success(response.message, 'Thành công');
-                            }else{
-                                toastr.error(response.message, 'Thất bại');
-                            }
-                            
+        Swal.fire({
+            title: 'Xóa thòi khóa biểu',
+            text: "Bạn có chắc chắn muốn xóa yêu  này! Dữ liệu không thể khôi phục",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý!',
+            cancelButtonText: 'Đóng'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    type: 'delete',
+                    url: '/admin/schedules/delete/' + id,
+                    success: function (response) {
+                        if(!response.error){
+                            $('#table_schedules').DataTable().ajax.reload();
+                            toastr.success(response.message, 'Thành công');
+                        }else{
+                            toastr.error(response.message, 'Thất bại');
                         }
-                    })
-                }
+                    }
+                });
             }
-        });
+        })
     })
 
     $('#formFilterSchedule').on('submit',function (event) {
@@ -119,6 +115,18 @@ $(document).ready(function () {
         let status = $('#filterStatus').val();
         let semester = $('#filterSemester').val();
         let room = $('#filterRoom').val();
+
+        if(status == 2)
+            $('#op-delete').css('display','none');
+        else
+            $('#op-delete').css('display','block');
+
+        if(status == 1 || status ==2){
+            $('#op-comfirm').css('display','none');
+        }else{
+            $('#op-comfirm').css('display','block');
+
+        }
 
         dataTable(status,semester,room);
     });
@@ -145,7 +153,7 @@ $(document).ready(function () {
                 }else{
                     toastr.error(res.message, 'Thất bại');
                 }
-                
+
             }
         });
     })
@@ -153,7 +161,7 @@ $(document).ready(function () {
     $('#table_schedules').on('click','.btn-view',function (e) {
         e.preventDefault();
         let id = $(this).attr('data-id');
-        
+
         $.ajax({
             type:'get',
             url:'/admin/schedules/show/'+id,
@@ -175,6 +183,111 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('.dt-checkboxes-all').change(function (){
+        if($('.dt-checkboxes-all:checked').length > 0){
+            $('.dt-checkboxes, input:checkbox').not(this).prop('checked', this.checked)
+        }else {
+            $('.dt-checkboxes, input:checkbox').not(this).prop('checked', this.checked,false)
+        }
+    })
+
+
+
+    $('#tableRegisterSchedules').on('change','.dt-checkboxes',function (){
+        let length = $('.dt-checkboxes').length
+        let rowcolumn = $('.dt-checkboxes:checked')
+        if(this.checked == false) {
+            $('.dt-checkboxes-all:checked').prop('checked', this.checked,false)
+        }
+
+        if(rowcolumn.length == length){
+            $('.dt-checkboxes-all').prop('checked', this.checked)
+        }
+    });
+    $('#actionSelectCheckbox').change(function (){
+        let type = $(this).val();
+        let data = [];
+        $.each($('.dt-checkboxes:checked'),function (){
+            data.push( $(this).attr('data-id'));
+        })
+
+        if($('.dt-checkboxes:checked').length > 0){
+            if(type == 'delete') {
+
+                Swal.fire({
+                    title: 'Xóa thòi khóa biểu',
+                    text: "Bạn có chắc chắn muốn xóa yêu đã chọn! Dữ liệu không thể khôi phục",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Đồng ý!',
+                    cancelButtonText: 'Đóng'
+                }).then((result) => {
+                    if (result.value) {
+                        $.ajax({
+                            type: 'delete',
+                            url: '/admin/schedules/delete-select',
+                            data: {
+                                id: data
+                            },
+                            success: function (response) {
+                                if (!response.error) {
+                                    $('#table_schedules').DataTable().ajax.reload();
+                                    toastr.success(response.message, 'Thành công');
+                                } else {
+                                    toastr.error(response.message, 'Thất bại');
+                                }
+                            }
+                        });
+                    }
+                })
+            }
+
+            if(type == 'comfirm'){
+                Swal.fire({
+                    title: 'Xác nhận thòi khóa biểu',
+                    text: "Bạn có chắc chắn muốn xác nhận yêu đã chọn!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Đồng ý!',
+                    cancelButtonText: 'Đóng'
+                }).then((result) => {
+                    if (result.value) {
+                        $.ajax({
+                            type: 'delete',
+                            url: '/admin/schedules/comfirm',
+                            data: {
+                                id: data
+                            },
+                            success: function (response) {
+                                if (!response.error) {
+                                    $('#table_schedules').DataTable().ajax.reload();
+                                    toastr.success(response.message, 'Thành công');
+                                } else {
+                                    toastr.error(response.message, 'Thất bại');
+                                }
+                            }
+                        });
+                    }
+                })
+            }
+        }else{
+            toastr.warning("Chưa có bản gi nào được chọn")
+        }
+
+
+
+
+
+        $('#actionSelectCheckbox').val('');
+        $('.dt-checkboxes-all').prop('checked', false)
+        $('.dt-checkboxes').prop('checked', false)
+    })
+
 
 
 })

@@ -72,6 +72,9 @@ class ScheduleController extends Controller
             $user_create = User::select('id','full_name')->find($schedule->user_create_id);
             return $user_create->full_name;
         })
+        ->addColumn('checkbox',function ($schedule){
+            return '<input type="checkbox" data-id="'.$schedule->id.'" class="dt-checkboxes" autocomplete="off">';
+        })
         ->editColumn('status',function($schedule){
             if($schedule->status == 1){
                 return '<span class="badge badge-success">Đã xử lý</span>';
@@ -94,7 +97,7 @@ class ScheduleController extends Controller
             return $string;
         })
         ->addIndexColumn()
-        ->rawColumns(['action','status'])
+        ->rawColumns(['action','status','checkbox'])
         ->make(true);
     }
 
@@ -173,5 +176,52 @@ class ScheduleController extends Controller
             }
         }
         return false;
+    }
+
+    public function deleteSelected(Request $request){
+        try {
+            $data = $request->id;
+
+            if($data == null)
+                return false;
+
+            $success = Schedule::whereIn('id',$data)->delete();
+            if($success){
+                return response()->json([
+                    'error'     => false,
+                    'message'   => "Xóa thành công các yêu cầu đã chọn"
+                ]);
+            }
+
+        }catch (\Exception $e){
+            return response()->json([
+                'error'     => true,
+                'message'   => "Xóa thất bại"
+            ]);
+        }
+
+    }
+
+    public function comfirm(Request $request){
+        try {
+            $data = $request->id;
+
+            if($data == null)
+                return false;
+
+            $success = Schedule::whereIn('id',$data)->update(['status'=>1]);
+            if($success){
+                return response()->json([
+                    'error'     => false,
+                    'message'   => "Xác nhận thành công các yêu cầu đã chọn"
+                ]);
+            }
+
+        }catch (\Exception $e){
+            return response()->json([
+                'error'     => true,
+                'message'   => "Xác nhận tất  bại"
+            ]);
+        }
     }
 }

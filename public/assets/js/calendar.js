@@ -91,13 +91,13 @@ $(document).ready(function () {
         $.ajax({
             type: 'get',
             url: '/get-schedules',
-            success: function (response) {
-                console.log(response)
-                var calendarE1 = document.getElementById('calendar');
+            success:  (response) => {
+                let calendarE1 = document.getElementById('calendar');
 
-                var calendar = new FullCalendar.Calendar(calendarE1, {
+                let calendar = new FullCalendar.Calendar(calendarE1, {
                     locale: 'vi',
                     plugins: ['bootstrap', 'interaction', 'dayGrid', 'timeGrid','rrule'],
+                    defaultView: 'timeGridWeek',
                     themeSystem: 'bootstrap',
                     header: {
                         left: 'prev,next today',
@@ -183,12 +183,14 @@ $(document).ready(function () {
                     }
                 });
 
-                calendar.render();
+                fullcalendar = calendar.render();
             }
         });
+
     }
 
     getEvent();
+
 
     jQuery.validator.addMethod("noSpace", function(value, element) {
         return value == '' || value.trim().length != 0;
@@ -569,9 +571,8 @@ $(document).ready(function () {
                 if(!res.error){
                     toastr.success(res.message);
                     $('#editEventModal').modal('hide');
-                    setTimeout(function(){
-                        window.location.replace("/calendar");
-                    },5000);
+                    $('#calendar').children().remove();
+                    getEvent();
                 }else{
                     toastr.error(res.message);
                 }
@@ -672,7 +673,7 @@ $(document).ready(function () {
 
     function getWeek(week_check){
         let data = [];
-        console.log(week_check);
+
         for (let i = week_check[0] ; i<= qualityWeekSemester; i++){
             let option = {
                 id:i,
@@ -695,4 +696,66 @@ $(document).ready(function () {
 
         $("#weekCheckEdit").val(week_check).trigger('change');
     }
+
+    $('#formExcel').validate({
+        rules: {
+            excel:{
+                required:true,
+            }
+        },
+        messages:{
+            excel:{
+                required:"Không được để trống file",
+            }
+        },
+        errorPlacement: function(error) {
+            error.insertAfter($('#file-text'));
+        }
+    });
+
+    $('#btnExcel').click(function () {
+        $('#formExcel')[0].reset();
+        $('.file-text').text("Thả hoặc chọn tệp của bạn tại đây.");
+        $('#uploadEx').css('display','none');
+        $('#excelModals').modal('show');
+    });
+
+    $('#fileExcel').change(function (){
+        if(this.files.length >0){
+            $('.file-text').text(this.files.length + " tệp đã được chọn");
+            $('#uploadEx').css('display','block');
+        }else {
+            $('.file-text').text("Thả hoặc chọn tệp của bạn tại đây.");
+            $('#uploadEx').css('display','none');
+        }
+    })
+
+    $('#uploadEx').click(function (e) {
+        e.preventDefault();
+        $('.loading').css('display','inline-block');
+
+        var formData = new FormData($('#formExcel')[0]);
+
+        $.ajax({
+            type: 'post',
+            url: '/calendar/import-excel',
+            processData: false,
+            contentType: false,
+            crossDomain: true,
+            data: formData,
+            success: function (res) {
+                $('.loading').css('display','none');
+
+                if (!res.error) {
+                    $('#excelModals').modal('hide');
+                    toastr.success(res.message);
+                    $('#calendar').children().remove();
+                    getEvent();
+                } else {
+                    toastr.error(res.message);
+                }
+            }
+
+        });
+    })
 });

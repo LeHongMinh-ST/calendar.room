@@ -167,6 +167,8 @@ Route::group([
             Route::get('/','ScheduleController@index')->name('schedules.index');
             Route::post('/getdata','ScheduleController@getData')->name('schedules.getdata');
             Route::delete('/delete/{id}','ScheduleController@destroy');
+            Route::delete('/delete-select','ScheduleController@deleteSelected');
+            Route::delete('/comfirm','ScheduleController@comfirm');
             Route::put('/change-status/{id}','ScheduleController@changeStatus');
             Route::get('/show/{id}','ScheduleController@show');
         });
@@ -218,9 +220,10 @@ Route::group([
                 Route::get('/','RegisterScheduleController@index')->name('register.schedules.index');
                 Route::get('/show/{id}','RegisterScheduleController@show');
                 Route::post('/getdata','RegisterScheduleController@getData');
-                Route::get('/{id}/edit','RegisterScheduleController@edit');
                 Route::put('/update/{id}','RegisterScheduleController@update');
+                Route::delete('/delete-select','RegisterScheduleController@deleteSelected');
                 Route::post('/check-unique-update-schedules/{id}','RegisterScheduleController@checkUniqueUpdateSchedules');
+                Route::get('/{id}/edit','RegisterScheduleController@edit');
 
             });
         });

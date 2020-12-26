@@ -39,7 +39,7 @@ class RegisterScheduleController extends Controller
 
     public function show($id)
     {
-        $schedule               = Schedule::find($id);
+        $schedule               = Schedule::withTrashed()->find($id);
         $subjects               = Subject::select('id', 'name')->get()->toArray();
         $schedule->teacher_name = User::where('user_name', $schedule['teacher_id'])->first()->full_name;
         $schedule->subject      = $this->filterArray($subjects, $schedule['subject_id'])['name'];
@@ -117,18 +117,23 @@ class RegisterScheduleController extends Controller
 
             return $string;
         })
+        ->addColumn('checkbox',function ($schedule){
+            return '<input type="checkbox" data-id="'.$schedule->id.'" class="dt-checkboxes" autocomplete="off">';
+        })
         ->addColumn('action', function ($schedule) {
             $string = '';
             $string .= '<a href="javascript:void()" class="btn btn-success btn-icon btn-view" data-id="'.$schedule->id.'" title="chi tiết yêu cầu" style="margin-right: 5px"><i class="fas fa-eye"></i></a>';
-            if($schedule->status == 0)
-            {
+
+            if ($schedule->status == 0)
                 $string .= '<a href="javascript:void()" class="btn btn-primary btn-icon btn-edit" data-id="'.$schedule->id.'" title="sửa yêu cầu" style="margin-right: 5px"><i class="fas fa-edit"></i></a>';
+
+            if(($schedule->status == 0 || Auth::user()->role_id == 1) && $schedule->status!=2)
                 $string .= '<a href="javascript:void()" class="btn btn-danger btn-icon btn-delete" data-id="'.$schedule->id.'" title="xóa yêu cầu"><i class="fas fa-trash-alt"></i></a>';
-            }
+
             return $string;
         })
         ->addIndexColumn()
-        ->rawColumns(['action','status'])
+        ->rawColumns(['action','status','checkbox'])
         ->make(true);
     }
 
@@ -148,23 +153,24 @@ class RegisterScheduleController extends Controller
 
     public function update(Request $request,$id)
     {
+
         try{
 
             $validator = Validator::make($request->all(),
-            [
-                'edit_room'             =>'bail|required',
-                'edit_subject'          =>'bail|required',
-                'edit_group'            =>'bail|required|numeric',
-                'edit_class'            =>'bail|required',
-                'edit_quantity'         =>'bail|required|numeric',
-                'edit_weekDay'          =>'bail|required|numeric',
-                'edit_lesson_start'     =>'bail|required|numeric|min:1|max:13',
-                'edit_lesson_quantity'  =>'bail|required|numeric|min:1|max:5',
-                'edit_week_start'       =>'bail|required|numeric|min:1',
-                'edit_week_quantity'    =>'bail|required|numeric|min:1',
-                'edit_note'             =>'max:300',
-            ],
-        );
+                [
+                    'edit_room'             =>'bail|required',
+                    'edit_subject'          =>'bail|required',
+                    'edit_group'            =>'bail|required|numeric',
+                    'edit_class'            =>'bail|required',
+                    'edit_quantity'         =>'bail|required|numeric',
+                    'edit_weekDay'          =>'bail|required|numeric',
+                    'edit_lesson_start'     =>'bail|required|numeric|min:1|max:13',
+                    'edit_lesson_quantity'  =>'bail|required|numeric|min:1|max:5',
+                    'edit_week_start'       =>'bail|required|numeric|min:1',
+                    'edit_week_quantity'    =>'bail|required|numeric|min:1',
+                    'edit_note'             =>'max:300',
+                ],
+            );
 
             if ($validator->fails()) {
                 return false;
@@ -181,6 +187,7 @@ class RegisterScheduleController extends Controller
 
             if(!$this->checkUniqueSchedulesBackend($request->get('edit_room'), $request->get('edit_lesson_start'),$request->get('edit_weekDay'),$request->get('edit_week_start'))) return false;
 
+
             $schedule = Schedule::findOrFail($id);
 
             $schedule->room_id          = $request->get('edit_room');
@@ -196,6 +203,7 @@ class RegisterScheduleController extends Controller
             $schedule->note             = $request->get('edit_note');
             $schedule->user_update_id   = Auth::user()->id;
             $save                       = $schedule->save();
+
 
             if($save){
                 $message = 'Cập nhật thành công';
@@ -316,5 +324,29 @@ class RegisterScheduleController extends Controller
             return ($lesson <=11-$lessonStart) ? true : false;
         else
             return $lesson <=14-$lessonStart ? true : false;
+    }
+
+    public function deleteSelected(Request $request){
+        try {
+            $data = $request->id;
+
+            if($data == null)
+                return false;
+
+            $success = Schedule::whereIn('id',$data)->delete();
+            if($success){
+                return response()->json([
+                    'error'     => false,
+                    'message'   => "Xóa thành công các yêu cầu đã chọn"
+                ]);
+            }
+
+        }catch (\Exception $e){
+            return response()->json([
+                'error'     => true,
+                'message'   => $e->getMessage()
+            ]);
+        }
+
     }
 }

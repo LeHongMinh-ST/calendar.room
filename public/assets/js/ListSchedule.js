@@ -10,7 +10,7 @@ $(document).ready(function(){
         placeholder: "Vui lòng chọn môn học",
         dropdownParent: $('#editEventModal')
     });
-    
+
     $('#edit_room').select2({
         placeholder: "Vui lòng chọn phòng học",
         dropdownParent: $('#editEventModal')
@@ -33,7 +33,7 @@ $(document).ready(function(){
             serverSide: true,
             searching: true,
             destroy: true,
-            // responsive: true,
+            responsive: true,
             language: {
                 sProcessing:   "Đang xử lý...",
                 sLengthMenu:   "Xem _MENU_ mục",
@@ -59,8 +59,21 @@ $(document).ready(function(){
                     "room": room,
                 }
             },
+                // 'columnDefs': [
+                //     {
+                //         targets: 0,
+                //         'checkboxes': {
+                //             'selectRow': true,
+                //         },
+                //     }
+                // ],
+            'select': {
+                'style': 'multi',selector: 'td:first-child'
+
+            },
+            // 'order': [[1, 'asc']],
             columns: [
-                {data: 'DT_RowIndex', searchable: false,class:'text-center'},
+                {data: 'checkbox', orderable: false,searchable: false,class:'text-center'},
                 {data: 'room_id', name: 'room_id', orderable: false, searchable: true},
                 {data: 'subject_id', name: 'subject_id', orderable: false, searchable: true},
                 {data: 'subject_name', name: 'subject_name', orderable: false, searchable: true, class:'text-center'},
@@ -71,15 +84,19 @@ $(document).ready(function(){
                 {data: 'number_session', name: 'number_session', orderable: false, searchable: false,class:'text-center'},
                 {data: 'week', name: 'week', orderable: false, searchable: false,class:'text-center'},
                 {data: 'number_week', name: 'number_week', orderable: false, searchable: false,class:'text-center'},
-                {data: 'created_at', name: 'created_at', orderable: false, searchable: false,class:'text-center'},
+                {data: 'created_at', name: 'created_at', orderable: false, searchable: true,class:'text-center'},
                 {data: 'status', name: 'status', orderable: false, searchable: false},
-                {data: 'action', name: 'action', orderable: false, searchable: false,class:'text-center'},
+                {data: 'action', name: 'action', orderable: false, searchable: false,class:'text-center',witdh:'15%'},
             ]
         });
         css();
+        $('.dt-checkboxes-all').prop('checked', false)
     }
 
     dataTable();
+
+
+
 
     $('#formFilterSchedule').on('submit',function (event) {
         event.preventDefault();
@@ -87,7 +104,14 @@ $(document).ready(function(){
         let semester = $('#filterSemester').val();
         let room = $('#filterRoom').val();
 
+
+        if(status == 2)
+            $('#op-delete').css('display','none');
+        else
+            $('#op-delete').css('display','block');
+
         dataTable(status,semester,room);
+
     });
 
     $('#redoFilter').click(function () {
@@ -98,7 +122,7 @@ $(document).ready(function(){
         $('#filterRoom').val(null).trigger('change');
     })
 
-    
+
     jQuery.validator.addMethod("noSpace", function(value, element) {
         return value == '' || value.trim().length != 0;
     }, "Vui lòng không nhập khoảng trắng");
@@ -115,7 +139,7 @@ $(document).ready(function(){
 
     jQuery.validator.addMethod("checkMaxWeek", function(value, element) {
         var status = null;
-       
+
         $.ajax({
             url:'/calendar/check-max-week',
             type: 'post',
@@ -170,7 +194,7 @@ $(document).ready(function(){
                 min:1,
                 max:13,
                 number:true,
-            }, 
+            },
             edit_week_quantity:{
                 required: true,
                 'noSpace': true,
@@ -185,7 +209,7 @@ $(document).ready(function(){
                 required: true,
                 'noSpace': true,
             },
-            
+
 
         },
         messages:{
@@ -217,12 +241,12 @@ $(document).ready(function(){
                 min: 'Số tiết phải lớn hơn 1',
                 max: 'Số tiết phải nhỏ hơn 13',
                 number: 'Số tiết phải là số',
-            }, 
+            },
             edit_week_quantity:{
                 required: 'Vui lòng nhập số lượng tuần!',
                 number: 'Số tuần phải là số',
             },
-            
+
             edit_quantity:{
                 required: 'Vui lòng nhập sĩ số lớp!',
                 number: 'Sĩ số lớp phải là số',
@@ -266,7 +290,6 @@ $(document).ready(function(){
             type:'get',
             url:'/calendar/register-schedules/'+id+'/edit',
             success:function(res){
-                console.log(res);
                 let schedule = res.schedule;
                 if(!res.error){
                     $('#edit_room').select2().val(schedule.room_id).trigger('change');
@@ -327,4 +350,113 @@ $(document).ready(function(){
             }
         })
     });
+
+    $('#tableRegisterSchedules').on('click', '.btn-delete', function (event) {
+        event.preventDefault();
+        let id = $(this).attr('data-id');
+        Swal.fire({
+            title: 'Xóa thòi khóa biểu',
+            text: "Bạn có chắc chắn muốn xóa yêu  này! Dữ liệu không thể khôi phục",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý!',
+            cancelButtonText: 'Đóng'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    type: 'delete',
+                    url: '/admin/schedules/delete/' + id,
+                    success: function (response) {
+                        if(!response.error){
+                            $('#table_schedules').DataTable().ajax.reload();
+                            toastr.success(response.message);
+                        }else{
+                            toastr.error(response.message);
+                        }
+                    }
+                });
+            }
+        })
+    })
+
+    $('.dt-checkboxes-all').change(function (){
+        if($('.dt-checkboxes-all:checked').length > 0){
+            $('.dt-checkboxes, input:checkbox').not(this).prop('checked', this.checked)
+        }else {
+            $('.dt-checkboxes, input:checkbox').not(this).prop('checked', this.checked,false)
+        }
+    })
+
+
+
+    $('#tableRegisterSchedules').on('change','.dt-checkboxes',function (){
+        let length = $('.dt-checkboxes').length
+        let rowcolumn = $('.dt-checkboxes:checked')
+        if(this.checked == false) {
+            $('.dt-checkboxes-all:checked').prop('checked', this.checked,false)
+        }
+
+        if(rowcolumn.length == length){
+            $('.dt-checkboxes-all').prop('checked', this.checked)
+        }
+    });
+    $('#actionSelectCheckbox').change(function (){
+        let type = $(this).val();
+        console.log(type)
+        let data = [];
+        $.each($('.dt-checkboxes:checked'),function (){
+            data.push( $(this).attr('data-id'));
+        })
+
+        if($('.dt-checkboxes:checked').length > 0){
+            if(type == 'delete') {
+
+                Swal.fire({
+                    title: 'Xóa thòi khóa biểu',
+                    text: "Bạn có chắc chắn muốn xóa yêu đã chọn! Dữ liệu không thể khôi phục",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Đồng ý!',
+                    cancelButtonText: 'Đóng'
+                }).then((result) => {
+                    if (result.value) {
+                        $.ajax({
+                            type: 'delete',
+                            url: '/calendar/register-schedules/delete-select',
+                            data: {
+                                id: data
+                            },
+                            success: function (response) {
+                                if (!response.error) {
+                                    $('#tableRegisterSchedules').DataTable().ajax.reload();
+                                    toastr.success(response.message, 'Thành công');
+                                } else {
+                                    toastr.error(response.message, 'Thất bại');
+                                }
+                            }
+                        });
+                    }
+                })
+            }
+
+            if(type == 'export'){
+                toastr.warning("Chức năng đang được phát triển!")
+            }
+        }else{
+            toastr.warning("Chưa có bản gi nào được chọn")
+        }
+
+
+
+
+
+        $('#actionSelectCheckbox').val('');
+        $('.dt-checkboxes-all').prop('checked', false)
+    })
+
+
 })

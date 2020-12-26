@@ -39,8 +39,11 @@ class CalendarController extends Controller
         }
 
         if (!Session::has('room')) {
-            $room = Room::select('id','room_id')->where('room_id','THCNTT01')->first()->toArray();
-            Session::put('room', $room);
+            $room = Room::select('id','room_id')->where('room_id','THCNTT01')->first();
+            if(!empty($room)) {
+                $room = $room->toArray();
+                Session::put('room', $room);
+            }
         }
 
         //Xử lý các thời khóa biểu đã hết hạn xác nhận

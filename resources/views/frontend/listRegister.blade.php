@@ -11,10 +11,19 @@
         .select2-selection__rendered {
             padding-top: 6px;
         }
+        #actionSelectCheckbox{
+            font-size: 14px;
+            padding: 10px 15px;
+            width: 150px !important;
+            margin-bottom: 10px;
+        }
     </style>
 @endsection
 @section('script')
-<script src="{{asset('assets/js/listSchedule.js')}}"></script>
+    <script>
+        const auth = @json(\Illuminate\Support\Facades\Auth::user());
+    </script>
+    <script src="{{asset('assets/js/ListSchedule.js')}}"></script>
 @endsection
 @section('content')
 <div class="main-content">
@@ -69,11 +78,21 @@
                             {{-- <a href="{{route('users.create')}}" class="btn btn-success" title="Thêm mới người dùng"><i class="fas fa-user-plus"></i></a> --}}
                         </div>
                         <div class="card-body">
+                            <div class="actionCheckbox">
+                                <select name="" class="custom-select custom-select-sm form-control form-control-sm" id="actionSelectCheckbox">
+                                    <option value="">Chọn hành động</option>
+                                    @if(\Illuminate\Support\Facades\Auth::user()->role_id == 1)
+                                        <option id="op-delete" value="delete">Xóa</option>
+                                    @endif
+                                    <option value="export">Xuất excel</option>
+                                </select>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-striped" id="tableRegisterSchedules">
                                     <thead>
                                     <tr>
-                                        <th>STT</th>
+                                        <th class="text-center dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="dt-checkboxes-all" autocomplete="off"></th>
+{{--                                        <th></th>--}}
                                         <th>Phòng máy</th>
                                         <th>Mã môn học</th>
                                         <th>Tên môn học</th>
@@ -117,17 +136,17 @@
                         <form id="formEditSchedules">
                             <div class="row">
                                 <div class="card-body col-4">
-                                   
+
                                     <div class="form-group">
                                         <label>Phòng máy:</label>
                                         <select class="js-example-basic-single form-control" id="edit_room" name="edit_room"
                                                 style="width: 219px">
                                                 @isset($rooms)
                                                     @foreach($rooms as $room)
-                                                        <option value="{{$room['id']}}" @if($room['room_id'] == \Session::get('room')['room_id']) selected @endif>{{$room['room_id']}}</option>
+                                                        <option value="{{$room['id']}}" @if(\Session::has('room')) @if($room['room_id'] == \Session::get('room')['room_id']) selected @endif @endif>{{$room['room_id']}}</option>
                                                     @endforeach
                                                 @endisset
-                                            
+
                                         </select>
                                     </div>
 
@@ -159,25 +178,25 @@
                                     <div class="form-group">
                                         <label>Lớp: <span class="required">(*)</span></label>
                                         <input type="text" class="form-control" name="edit_class" id="edit_class" value="" >
-                                        
+
                                     </div>
 
                                     <div class="form-group">
                                         <label>Nhóm môn học: <span class="required">(*)</span></label>
                                         <input type="number" class="form-control" name="edit_group" id="edit_group" value="">
-                                     
+
                                     </div>
                                     <div class="form-group">
                                         <label>Số tiết: <span class="required">(*)</span></label>
                                         <input type="number" class="form-control"  name="edit_lesson_quantity" id="edit_lesson_quantity"
                                                value="" >
-                                      
+
                                     </div>
                                     <div class="form-group">
                                         <label>Số tuần:<span class="required">(*)</span></label>
                                         <input type="number" class="form-control" name="edit_week_quantity" id="edit_week_quantity"
                                                value="" >
-                                        
+
                                     </div>
 
                                 </div>
@@ -209,7 +228,7 @@
 
                             <div class="modal-footer text-right">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal" >Đóng</button>
-                                <button type="submit" class="btn btn-primary" id="btnSubmitEditEventCalendar" for="formEditSchedules">Cập nhật</button>
+                                <button type="button" class="btn btn-primary" id="btnSubmitEditEventCalendar" for="formEditSchedules">Cập nhật</button>
                             </div>
                         </form>
                     </div>
@@ -292,9 +311,9 @@
                                 </td>
                             </tr>
                         </table>
-                        
+
                     </div>
-                    
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
                     </div>

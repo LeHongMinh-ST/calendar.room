@@ -4,6 +4,13 @@
         .select2-selection__rendered {
             padding-top: 6px;
         }
+
+        #actionSelectCheckbox{
+            font-size: 14px;
+            padding: 10px 15px;
+            width: 150px !important;
+            margin-bottom: 10px;
+        }
     </style>
 @endsection
 @section('script')
@@ -72,11 +79,18 @@
                             {{-- <a href="{{route('users.create')}}" class="btn btn-success" title="Thêm mới người dùng"><i class="fas fa-user-plus"></i></a> --}}
                         </div>
                         <div class="card-body">
+                            <div class="actionCheckbox">
+                                <select name="" class="custom-select custom-select-sm form-control form-control-sm" id="actionSelectCheckbox">
+                                    <option value="">Chọn hành động</option>
+                                    <option id="op-comfirm" value="comfirm">Xác nhận</option>
+                                    <option id="op-delete" value="delete">Xóa</option>
+                                </select>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-striped" id="table_schedules">
                                     <thead>
                                     <tr>
-                                        <th>STT</th>
+                                        <th class="text-center dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="dt-checkboxes-all" autocomplete="off"></th>
                                         <th>Phòng máy</th>
                                         <th>Mã môn học</th>
                                         <th>Tên môn học</th>

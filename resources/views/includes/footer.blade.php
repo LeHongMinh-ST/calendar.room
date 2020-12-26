@@ -19,3 +19,4 @@
 <script src="{{asset('/')}}assets/js/includes/sweetalert2.js"></script>
 <script src="{{asset('/')}}assets/js/includes/moment.js"></script>
 <script src="{{asset('/')}}assets/js/includes/settingToastr.js"></script>
+<script src="{{asset('/')}}assets/js/includes/dataTable-checkbox.js"></script>
