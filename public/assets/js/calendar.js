@@ -115,10 +115,6 @@ $(document).ready(function () {
                         return moment().diff(select.start) <= 0
                     },
                     select: function (arg) {
-                        if (arg.start.getDay() == 0)
-                            $('#weekDay').val(8);
-                        else
-                            $('#weekDay').val(arg.start.getDay() + +1);
 
                         if(semester_id == now_id ){
                             if($('#formCreatSchedules')){
@@ -132,9 +128,13 @@ $(document).ready(function () {
                                             return arg.startStr;
                                         }
                                     },
-                                    success:function (res) {
+                                    success: (res) => {
                                         if(res.error != true){
                                             $('#weekNow').text(res.week);
+                                            if (arg.start.getDay() == 0)
+                                                $('#weekDay').val(8);
+                                            else
+                                                $('#weekDay').val(arg.start.getDay() + +1);
                                             $('#addEventModal').modal('show');
                                         }else{
                                             toastr.warning('Tuần học không nằm trong học kì hiện tại!')

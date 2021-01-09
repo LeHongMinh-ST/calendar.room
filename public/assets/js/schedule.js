@@ -142,7 +142,6 @@ $(document).ready(function () {
     $('#table_schedules').on('click','.btn-edit',function (e) {
         e.preventDefault();
         let id = $(this).attr('data-id');
-        console.log(id);
         $.ajax({
             type:'put',
             url:'/admin/schedules/change-status/'+id,

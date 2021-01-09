@@ -103,7 +103,7 @@ jQuery( document ).ready(function( $ ) {
         $('#addModalFaculty').modal('show');
     });
 
-    $('#formAddFaculty').on('click','.btn-edit',function(e){
+    $('#formAddFaculty').on('click','.btn-save',function(e){
         e.preventDefault();
         let id_semester = $(this).attr('data-id');
         if(!$('#formAddFaculty').valid()) return false;
