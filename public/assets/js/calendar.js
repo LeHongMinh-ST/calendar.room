@@ -96,17 +96,17 @@ $(document).ready(function () {
 
                 let calendar = new FullCalendar.Calendar(calendarE1, {
                     locale: 'vi',
-                    plugins: ['bootstrap', 'interaction', 'dayGrid', 'timeGrid','rrule'],
+                    plugins: ['bootstrap', 'interaction', 'timeGrid','rrule'],
                     defaultView: 'timeGridWeek',
                     themeSystem: 'bootstrap',
                     header: {
-                        left: 'prev,next today',
+                        left: 'today',
                         center: 'title',
-                        right: 'dayGridMonth,timeGridWeek'
+                        right: 'prev,next '
                     },
-                    weekNumbers: true,
-                    weekNumbersWithinDays: true,
-                    weekNumberCalculation: 'ISO',
+                    // weekNumbers: true,
+                    // weekNumbersWithinDays: true,
+                    // weekNumberCalculation: 'ISO',
                     defaultDate: Date.now(),
                     navLinks: true,
                     selectable: true,
@@ -190,7 +190,6 @@ $(document).ready(function () {
     }
 
     getEvent();
-
 
     jQuery.validator.addMethod("noSpace", function(value, element) {
         return value == '' || value.trim().length != 0;
